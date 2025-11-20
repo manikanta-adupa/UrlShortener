@@ -30,6 +30,10 @@ public class UrlService {
         urlMapping.setOriginalUrl(url);
         urlMapping.setCreatedTime(System.currentTimeMillis());
 
+        long currentTimeInSeconds = System.currentTimeMillis() / 1000;
+        long expirationTime = currentTimeInSeconds + (365 * 24 * 60 * 60);
+        urlMapping.setExpiresAt(expirationTime);
+
         urlRepository.save(urlMapping);
 
         return shortCode;
@@ -41,8 +45,16 @@ public class UrlService {
         if(urlMapping == null){
             throw new RuntimeException("Short code " + shortCode + " not found");
         }
-
+        urlRepository.incrementClickCount(shortCode);
         return urlMapping.getOriginalUrl();
+    }
+
+    public UrlMapping getMapping(String shortCode) {
+        UrlMapping urlMapping = urlRepository.getUrl(shortCode);
+        if(urlMapping == null){
+            throw new RuntimeException("Short code " + shortCode + " not found");
+        }
+        return urlMapping;
     }
 
 }

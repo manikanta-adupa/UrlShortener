@@ -1,6 +1,7 @@
 package com.learning.urlshortener.controller;
 
 import com.learning.urlshortener.UrlShortenerApplication;
+import com.learning.urlshortener.dto.LinkStatsResponse;
 import com.learning.urlshortener.dto.ShortenRequest;
 import com.learning.urlshortener.dto.ShortenResponse;
 import com.learning.urlshortener.entity.UrlMapping;
@@ -27,5 +28,11 @@ public class UrlShortenController {
     public void redirect(@PathVariable String shortCode, HttpServletResponse response) throws IOException {
         String originalUrl = urlService.getYourOriginalUrl(shortCode);
         response.sendRedirect(originalUrl);
+    }
+
+    @GetMapping("/{shortCode}/stats")
+    public LinkStatsResponse getStats(@PathVariable String shortCode) {
+        UrlMapping mapping = urlService.getMapping(shortCode);
+        return new LinkStatsResponse(mapping.getOriginalUrl(), mapping.getClickCount());
     }
 }

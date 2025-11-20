@@ -17,6 +17,9 @@ public class UrlMapping {
     private String originalUrl;
     private long createdTime;
 
+    private long clickCount=0;
+    private long expiresAt;
+
     @DynamoDbPartitionKey
     public String getShortCode() {
         return shortCode;
