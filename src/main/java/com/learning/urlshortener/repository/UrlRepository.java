@@ -2,10 +2,8 @@ package com.learning.urlshortener.repository;
 
 import com.learning.urlshortener.entity.UrlMapping;
 import org.springframework.stereotype.Repository;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
+import software.amazon.awssdk.enhanced.dynamodb.*;
+import software.amazon.awssdk.enhanced.dynamodb.model.PutItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
@@ -24,7 +22,15 @@ public class UrlRepository {
     }
 
     public void save(UrlMapping urlMapping) {
-        table.putItem(urlMapping);
+        Expression condition = Expression.builder()
+                .expression("attribute_not_exists(shortCode)")
+                .build();
+
+        PutItemEnhancedRequest<UrlMapping> request = PutItemEnhancedRequest.builder(UrlMapping.class)
+                .item(urlMapping)
+                .conditionExpression(condition)
+                .build();
+        table.putItem(request);
     }
 
     public UrlMapping getUrl(String shortCode) {

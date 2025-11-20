@@ -4,6 +4,7 @@ import com.learning.urlshortener.entity.UrlMapping;
 import com.learning.urlshortener.repository.UrlRepository;
 import com.learning.urlshortener.util.CodeGenerator;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 
 @Service
@@ -22,21 +23,31 @@ public class UrlService {
         if (!url.startsWith("https://") && !url.startsWith("http://")) {
             url = "https://" + url;
         }
-        String shortCode =  codeGenerator.generateCode(6);
 
-        UrlMapping urlMapping = new UrlMapping();
+        int maxTries = 5;
+        for (int i = 1; i <= maxTries; i++) {
+            String shortCode =  codeGenerator.generateCode(6);
 
-        urlMapping.setShortCode(shortCode);
-        urlMapping.setOriginalUrl(url);
-        urlMapping.setCreatedTime(System.currentTimeMillis());
+            UrlMapping urlMapping = new UrlMapping();
 
-        long currentTimeInSeconds = System.currentTimeMillis() / 1000;
-        long expirationTime = currentTimeInSeconds + (365 * 24 * 60 * 60);
-        urlMapping.setExpiresAt(expirationTime);
+            urlMapping.setShortCode(shortCode);
+            urlMapping.setOriginalUrl(url);
+            urlMapping.setCreatedTime(System.currentTimeMillis());
 
-        urlRepository.save(urlMapping);
+            long currentTimeInSeconds = System.currentTimeMillis() / 1000;
+            long expirationTime = currentTimeInSeconds + (7 * 24 * 60 * 60);
+            urlMapping.setExpiresAt(expirationTime);
 
-        return shortCode;
+            try {
+                urlRepository.save(urlMapping);
+                return shortCode;
+
+            } catch (ConditionalCheckFailedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw new RuntimeException("Maximum tries reached");
     }
 
     public String getYourOriginalUrl(String shortCode) {
