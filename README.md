@@ -38,22 +38,15 @@ This is a cloud-native, event-driven URL shortener that scales instantly from 0 
 
 ---
 
-## Deployment Architecture
+## Deployment
 
-### Frontend (S3 Static Website)
-The frontend is a single-page HTML application hosted on **Amazon S3** with static website hosting:
-- **Bucket**: `url-shortener-manikanta-adupa`
-- **Region**: `ap-south-2` (Hyderabad)
-- **URL**: `http://url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com`
+| Component | Hosted On |
+|-----------|-----------|
+| **Frontend** | AWS S3 (Static Website Hosting) |
+| **Backend API** | AWS Lambda via API Gateway |
+| **Database** | Amazon DynamoDB |
 
-### Backend (Lambda + API Gateway + DynamoDB)
-The backend is a **Spring Boot 3** application deployed as an **AWS Lambda** function:
-- **Runtime**: Java 17 with SnapStart enabled
-- **Handler**: `com.learning.urlshortener.handler.LambdaHandler`
-- **API Gateway**: REST API with proxy integration (`/{proxy+}`)
-- **Database**: DynamoDB table with `shortCode` as partition key and TTL enabled
-
-**Base URL (API Gateway)**: `https://2nzlphq3qb.execute-api.ap-south-2.amazonaws.com/dev`
+**API Base URL**: `https://2nzlphq3qb.execute-api.ap-south-2.amazonaws.com/dev`
 
 ---
 
