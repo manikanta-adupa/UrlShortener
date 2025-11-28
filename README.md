@@ -4,14 +4,23 @@
 ![AWS Serverless](https://img.shields.io/badge/AWS-Serverless-232F3E?logo=amazonaws&logoColor=white)
 ![DynamoDB](https://img.shields.io/badge/Database-DynamoDB-4053D6?logo=amazondynamodb&logoColor=white)
 ![Java 17](https://img.shields.io/badge/Java-17-ED8B00?logo=openjdk&logoColor=white)
+![S3 Static Hosting](https://img.shields.io/badge/Frontend-S3_Static-569A31?logo=amazons3&logoColor=white)
 
 A **high-performance, fully serverless** URL shortening service built with **Spring Boot 3**, **AWS Lambda**, and **Amazon DynamoDB**.  
 Designed for **sub-500ms cold starts**, **zero-cost when idle**, and **perfect analytics accuracy** under extreme concurrency (e.g., viral "celebrity tweet" scenarios).
 
-Live Demo: [Link](http://url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com)
+🌐 **Live Demo**: [url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com](http://url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com)
 
+---
 
-Try shortening: `POST` to `/api/v1/shorten`
+## Tech Stack
+
+| Layer | Technology | Description |
+|-------|------------|-------------|
+| **Frontend** | AWS S3 Static Website | Simple HTML/CSS/JS hosted on S3 with static website hosting enabled |
+| **API Gateway** | AWS API Gateway (REST) | Handles HTTPS requests, routes to Lambda, manages CORS |
+| **Backend** | AWS Lambda + Spring Boot 3 | Serverless Java 17 runtime with SnapStart for fast cold starts |
+| **Database** | Amazon DynamoDB | NoSQL database with on-demand capacity, TTL for link expiration |
 
 ---
 
@@ -19,16 +28,36 @@ Try shortening: `POST` to `/api/v1/shorten`
 
 This is a cloud-native, event-driven URL shortener that scales instantly from 0 to thousands of RPS with **zero servers to manage**.
 
-Key differentiators from typical tutorials:
-- Solves Java cold starts using **AWS Lambda SnapStart** (CRaC)
-- Race-condition-free click analytics using **DynamoDB atomic counters**
-- Collision-safe custom aliases via **optimistic locking**
-- Production-ready architecture using the **Adapter Pattern**
+### Key Features
+- ⚡ **Serverless Architecture** - No servers to provision or manage
+- 🚀 **Fast Cold Starts** - AWS Lambda SnapStart (CRaC) for sub-500ms startup
+- 📊 **Accurate Analytics** - DynamoDB atomic counters for race-condition-free click tracking
+- 🔒 **Collision-Safe** - Optimistic locking prevents duplicate short codes
+- 💰 **Cost Efficient** - Pay only for what you use, zero cost when idle
+- 🌍 **Globally Accessible** - S3 static hosting + API Gateway for worldwide availability
 
 ---
 
-Base Url(API Gateway): https://2nzlphq3qb.execute-api.ap-south-2.amazonaws.com/dev
+## Deployment Architecture
 
+### Frontend (S3 Static Website)
+The frontend is a single-page HTML application hosted on **Amazon S3** with static website hosting:
+- **Bucket**: `url-shortener-manikanta-adupa`
+- **Region**: `ap-south-2` (Hyderabad)
+- **URL**: `http://url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com`
+
+### Backend (Lambda + API Gateway + DynamoDB)
+The backend is a **Spring Boot 3** application deployed as an **AWS Lambda** function:
+- **Runtime**: Java 17 with SnapStart enabled
+- **Handler**: `com.learning.urlshortener.handler.LambdaHandler`
+- **API Gateway**: REST API with proxy integration (`/{proxy+}`)
+- **Database**: DynamoDB table with `shortCode` as partition key and TTL enabled
+
+**Base URL (API Gateway)**: `https://2nzlphq3qb.execute-api.ap-south-2.amazonaws.com/dev`
+
+---
+
+## API Endpoints
 
 ### 1. Shorten a URL
 ```
@@ -54,10 +83,40 @@ GET {{baseUrl}}/{shortCode}/stats
 
 ```mermaid
 graph LR
-    User((User)) -->|HTTPS Request| APIG[API Gateway<br/>REST API]
-    APIG -->|Invoke| Lambda[AWS Lambda<br/>Java 17 + SnapStart]
+    User((User)) -->|Visit Website| S3[S3 Static Website<br/>Frontend]
+    S3 -->|API Calls| APIG[API Gateway<br/>REST API]
+    APIG -->|Invoke| Lambda[AWS Lambda<br/>Spring Boot 3 + Java 17]
     Lambda -->|Read/Write| DDB[DynamoDB<br/>On-Demand]
-    Lambda -->|302 Redirect| User
-    Lambda -->|Atomic Update| DDB
+    User -->|Short URL| APIG
+    APIG -->|302 Redirect| User
+```
+
+### Request Flow
+
+1. **User visits frontend** → S3 serves the static HTML/JS
+2. **User submits long URL** → Frontend calls `POST /api/v1/shorten`
+3. **API Gateway** → Routes request to Lambda function
+4. **Lambda (Spring Boot)** → Generates short code, saves to DynamoDB
+5. **Response** → Returns short code to frontend
+6. **User clicks short link** → API Gateway triggers Lambda → Fetches original URL → Returns 302 redirect
+
+---
+
+## Local Development
+
+### Prerequisites
+- Java 17+
+- Maven 3.8+
+- AWS CLI configured with credentials
+
+### Build
+```bash
+./mvnw clean package -DskipTests
+```
+
+### Deploy to Lambda
+Upload the generated JAR to your Lambda function:
+```
+target/url-shortener-0.0.1-SNAPSHOT.jar
 ```
 
