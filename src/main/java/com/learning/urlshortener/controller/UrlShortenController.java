@@ -1,6 +1,5 @@
 package com.learning.urlshortener.controller;
 
-import com.learning.urlshortener.UrlShortenerApplication;
 import com.learning.urlshortener.dto.LinkStatsResponse;
 import com.learning.urlshortener.dto.ShortenRequest;
 import com.learning.urlshortener.dto.ShortenResponse;

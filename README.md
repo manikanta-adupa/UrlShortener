@@ -8,7 +8,7 @@
 A **high-performance, fully serverless** URL shortening service built with **Spring Boot 3**, **AWS Lambda**, and **Amazon DynamoDB**.  
 Designed for **sub-500ms cold starts**, **zero-cost when idle**, and **perfect analytics accuracy** under extreme concurrency (e.g., viral "celebrity tweet" scenarios).
 
-Live Demo: [Link](https://2nzlphq3qb.execute-api.ap-south-2.amazonaws.com/dev/health)
+Live Demo: [Link](http://url-shortener-manikanta-adupa.s3-website.ap-south-2.amazonaws.com)
 
 
 Try shortening: `POST` to `/api/v1/shorten`
